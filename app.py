@@ -1,6 +1,8 @@
 import streamlit as st
 
-# Dummy alumni data (hardcoded)
+# -----------------------------
+# Dummy Alumni Data
+# -----------------------------
 alumni_list = [
     {"name": "Ananya Sharma", "batch": "CSE 2019", "role": "Software Engineer, Google"},
     {"name": "Rohan Menon", "batch": "ECE 2020", "role": "Hardware Engineer, Intel"},
@@ -14,22 +16,58 @@ alumni_list = [
     {"name": "Vikram Singh", "batch": "ME 2018", "role": "Aerospace Engineer, ISRO"},
 ]
 
-st.set_page_config(page_title="Alumni Directory", layout="centered")
-st.title("📘 Alumni Directory - ARC")
+# -----------------------------
+# Page Configuration
+# -----------------------------
+st.set_page_config(page_title="Alumni Directory", layout="wide")
+st.title("📘 Alumni Directory")
+st.markdown("<hr>", unsafe_allow_html=True)
 
+# -----------------------------
 # Search Bar
-search_query = st.text_input("🔍 Search alumni by name")
+# -----------------------------
+search_query = st.text_input("🔍 Search alumni by name ", placeholder="Type a name or initial...")
 
-# Filtered list
+# Filter alumni list (only names starting with query)
+filtered_list = []
 if search_query:
-    filtered_list = [al for al in alumni_list if search_query.lower() in al["name"].lower()]
+    q = search_query.lower()
+    filtered_list = [alum for alum in alumni_list if alum["name"].lower().startswith(q)]
 else:
     filtered_list = alumni_list
 
-# Display alumni
-for alum in filtered_list:
-    with st.container():
-        st.markdown(f"**{alum['name']}**")
-        st.write(f"Batch: {alum['batch']}")
-        st.write(f"Role: {alum['role']}")
-        st.markdown("---")
+# -----------------------------
+# Dynamic Theme Styles (light/dark aware)
+# -----------------------------
+light_card = "background-color:#ffffff; color:#000000;"
+dark_card = "background-color:#262730; color:#fafafa;"
+
+# Detect theme based on Streamlit theme settings (approx)
+def get_card_style():
+    theme = st.get_option("theme.base")
+    if theme == "dark":
+        return dark_card
+    return light_card
+
+card_style = get_card_style()
+
+# -----------------------------
+# Display Alumni Cards in Grid
+# -----------------------------
+if filtered_list:
+    cols = st.columns(2)
+    for i, alum in enumerate(filtered_list):
+        with cols[i % 2]:
+            st.markdown(
+                f"""
+                <div style='{card_style} padding:15px; border-radius:10px; 
+                            box-shadow: 2px 2px 8px rgba(0,0,0,0.1); margin-bottom:15px;'>
+                    <h4 style='margin-bottom:5px;'>{alum['name']}</h4>
+                    <p style='margin:2px 0;'><b>Batch:</b> {alum['batch']}</p>
+                    <p style='margin:2px 0;'><b>Role:</b> {alum['role']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+else:
+    st.info("No alumni found starting with that input.")
