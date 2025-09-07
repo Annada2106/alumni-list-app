@@ -58,6 +58,7 @@ export default function App() {
   const [filteredAlumni, setFilteredAlumni] = useState(alumniList);
 
   const titleAnim = useRef(new Animated.Value(-50)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(titleAnim, { toValue: 0, duration: 800, useNativeDriver: true }).start();
@@ -70,20 +71,11 @@ export default function App() {
     );
   }, [searchQuery]);
 
-  // Animated gradient trick
-  const gradientAnim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(gradientAnim, { toValue: 1, duration: 8000, useNativeDriver: false }),
-        Animated.timing(gradientAnim, { toValue: 0, duration: 8000, useNativeDriver: false }),
-      ])
-    ).start();
-  }, []);
-
-  const backgroundColor = gradientAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#ff9a9e', '#fad0c4'], // pink to peach gradient
+  // Corrected pastel gradient: yellow → pink → violet (no blue tinge)
+  const backgroundColor = scrollY.interpolate({
+    inputRange: [0, 150, 300],
+    outputRange: ['#FFFACD', '#FFD1DC', '#DDA0DD'],
+    extrapolate: 'clamp',
   });
 
   return (
@@ -102,11 +94,16 @@ export default function App() {
       {filteredAlumni.length === 0 ? (
         <Text style={styles.noResult}>No alumni found starting with that input.</Text>
       ) : (
-        <FlatList
+        <Animated.FlatList
           data={filteredAlumni}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => <AlumniCard item={item} index={index} />}
           contentContainerStyle={{ paddingBottom: 20 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
         />
       )}
     </Animated.View>
