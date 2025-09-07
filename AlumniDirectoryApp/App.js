@@ -28,29 +28,14 @@ function AlumniCard({ item, index }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // staggered fade-in animation
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 600,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 600, delay: index * 100, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 600, delay: index * 100, useNativeDriver: true }),
     ]).start();
   }, []);
 
-  const onPressIn = () => {
-    Animated.spring(scaleAnim, { toValue: 1.05, useNativeDriver: true }).start();
-  };
-  const onPressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
-  };
+  const onPressIn = () => Animated.spring(scaleAnim, { toValue: 1.05, useNativeDriver: true }).start();
+  const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
 
   return (
     <TouchableOpacity activeOpacity={1} onPressIn={onPressIn} onPressOut={onPressOut}>
@@ -75,11 +60,7 @@ export default function App() {
   const titleAnim = useRef(new Animated.Value(-50)).current;
 
   useEffect(() => {
-    Animated.timing(titleAnim, {
-      toValue: 0,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+    Animated.timing(titleAnim, { toValue: 0, duration: 800, useNativeDriver: true }).start();
   }, []);
 
   useEffect(() => {
@@ -89,8 +70,24 @@ export default function App() {
     );
   }, [searchQuery]);
 
+  // Animated gradient trick
+  const gradientAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(gradientAnim, { toValue: 1, duration: 8000, useNativeDriver: false }),
+        Animated.timing(gradientAnim, { toValue: 0, duration: 8000, useNativeDriver: false }),
+      ])
+    ).start();
+  }, []);
+
+  const backgroundColor = gradientAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#ff9a9e', '#fad0c4'], // pink to peach gradient
+  });
+
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { backgroundColor }]}>
       <Animated.Text style={[styles.title, { transform: [{ translateY: titleAnim }] }]}>
         Alumni Directory
       </Animated.Text>
@@ -112,12 +109,12 @@ export default function App() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f7f7f7' },
+  container: { flex: 1, padding: 20 },
   title: { fontSize: 36, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
   searchBox: { padding: 10, borderWidth: 2, borderColor: '#ccc', borderRadius: 8, fontSize: 16, marginBottom: 20 },
   card: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 15, shadowColor: '#000', shadowOpacity: 0.1, shadowOffset: { width: 2, height: 2 }, shadowRadius: 8, elevation: 3 },
